@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 5000
 
 # Define environment variable
-ENV NAME SimpleWebsite
+ENV NAME=SimpleWebsite
 
 # Run app.py when the container launches
 CMD ["python", "app/app.py"]
