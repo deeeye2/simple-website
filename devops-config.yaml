@@ -52,6 +52,6 @@ jobs:
         enabled: true
         field_path: jobs[5].stages[0].tasks.git_update.target_branch
         file_name: devops-config.yaml
-        new_value: 2.0.1
+        new_value: 2.0.4
 mode: remote
 username: root
