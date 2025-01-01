@@ -1,68 +1,57 @@
-mode: remote
-identifier: test
 category: dev
-username: root
+identifier: test
 jobs:
-  - stages:
-      - name: Docker
-        tasks:
-          setup_and_clone:
-            enabled: true
-            clone_dir: "/tmp/artifacts"
-            source_url: "https://github.com/deeeye2/simple-website.git"
-
-      - name: trivy-file
-        tasks:
-          trivy:
-            enabled: true
-            target_type: "filesystem"
-            target: "/tmp/artifacts"
-            output_dir: "/tmp/trivy_results-file"
-            format: "json"
-            severity: "LOW,MEDIUM,HIGH,CRITICAL"
-
-      - name: Docker Build
-        tasks:
-          docker_build:
-            enabled: true
-            output_dir: "/tmp/docker_artifacts"
-            dockerfile_path: "/tmp/artifacts/Dockerfile"
-            image_name: "my-docker-image"
-            image_tag: "latest"
-            build_tag: "latest"
-
-      - name: Trivy Scan
-        tasks:
-          sh:
-            enabled: true
-            steps:
-              - "echo 'Starting Trivy scan on Docker image...'"
-              - "mkdir -p /tmp/trivy_results"
-              - |
-                trivy image my-docker-image:latest \
-                  --format json \
-                  --output /tmp/trivy_results/scan_report.json \
-                  --severity LOW,MEDIUM,HIGH,CRITICAL \
-                  --timeout 5m \
-                  --vuln-type os,library \
-                  --ignore-unfixed
-              - |
-                if [ -f /tmp/trivy_results/scan_report.json ]; then
-                  echo 'Trivy scan completed successfully.';
-                else
-                  echo 'Trivy scan failed or report is missing.';
-                fi
-      - name: Git Update Pipeline
-        tasks:
-          git_update:
-            enabled: true
-            clone_dir: "/tmp/artifacts"
-            file_name: "devops-config.yaml"
-            field_path: "jobs[5].stages[0].tasks.git_update.target_branch"
-            new_value: "2.0.0"
-            commit_message: "Update configuration dynamically"
-            branch: "master"
-            credentials:
-              type: "pat"
-              username: "deeeye2"
-              pat: ""
+- stages:
+  - name: Docker
+    tasks:
+      setup_and_clone:
+        clone_dir: /tmp/artifacts
+        enabled: true
+        source_url: https://github.com/deeeye2/simple-website.git
+  - name: trivy-file
+    tasks:
+      trivy:
+        enabled: true
+        format: json
+        output_dir: /tmp/trivy_results-file
+        severity: LOW,MEDIUM,HIGH,CRITICAL
+        target: /tmp/artifacts
+        target_type: filesystem
+  - name: Docker Build
+    tasks:
+      docker_build:
+        build_tag: latest
+        dockerfile_path: /tmp/artifacts/Dockerfile
+        enabled: true
+        image_name: my-docker-image
+        image_tag: latest
+        output_dir: /tmp/docker_artifacts
+  - name: Trivy Scan
+    tasks:
+      sh:
+        enabled: true
+        steps:
+        - echo 'Starting Trivy scan on Docker image...'
+        - mkdir -p /tmp/trivy_results
+        - "trivy image my-docker-image:latest \\\n  --format json \\\n  --output /tmp/trivy_results/scan_report.json\
+          \ \\\n  --severity LOW,MEDIUM,HIGH,CRITICAL \\\n  --timeout 5m \\\n  --vuln-type\
+          \ os,library \\\n  --ignore-unfixed\n"
+        - "if [ -f /tmp/trivy_results/scan_report.json ]; then\n  echo 'Trivy scan\
+          \ completed successfully.';\nelse\n  echo 'Trivy scan failed or report is\
+          \ missing.';\nfi\n"
+  - name: Git Update Pipeline
+    tasks:
+      git_update:
+        branch: master
+        clone_dir: /tmp/artifacts
+        commit_message: Update configuration dynamically
+        credentials:
+          pat: ''
+          type: pat
+          username: deeeye2
+        enabled: true
+        field_path: jobs[5].stages[0].tasks.git_update.target_branch
+        file_name: devops-config.yaml
+        new_value: 2.0.1
+mode: remote
+username: root
