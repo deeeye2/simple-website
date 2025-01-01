@@ -56,9 +56,13 @@ jobs:
         tasks:
           git_update:
             enabled: true
-            config_file: "/path/to/config.yaml"
-            new_version: "2.0.0"
+            clone_dir: "/tmp/artifacts"
+            file_name: "devops-config.yaml"
+            field_path: "jobs[5].stages[0].tasks.git_update.target_branch"
+            new_value: "2.0.0"
             commit_message: "Update configuration dynamically"
             branch: "master"
             credentials:
+              type: "pat"
+              username: "deeeye2"
               pat: ""
