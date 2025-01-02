@@ -1,0 +1,23 @@
+mode: remote
+identifier: devops-bot
+category: dev
+username: root
+jobs:
+  - stages:
+      - name: Docker
+        tasks:
+          setup_and_clone:
+            enabled: true
+            clone_dir: "/tmp/artifacts"
+            source_url: "https://github.com/deeeye2/simple-website.git"
+
+      - name: Docker Build
+        tasks:
+          docker_build:
+            enabled: true
+            output_dir: "/tmp/docker_artifacts"
+            dockerfile_path: "/tmp/artifacts/Dockerfile"
+            image_name: "dob-trial-build"
+            image_tag: "v6"
+            build_tag: "v6"
+
