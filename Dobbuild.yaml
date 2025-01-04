@@ -18,6 +18,6 @@ jobs:
             output_dir: "/tmp/docker_artifacts"
             dockerfile_path: "/tmp/artifacts/Dockerfile"
             image_name: "dob-trial-build"
-            image_tag: "v1"
-            build_tag: "v1"
+            image_tag: "v3"
+            build_tag: "v3"
 
