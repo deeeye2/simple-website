@@ -19,5 +19,5 @@ jobs:
             dockerfile_path: "/tmp/artifacts/Dockerfile"
             image_name: "dob-trial-build"
             image_tag: "v1"
-            build_tag: "v2"
+            build_tag: "v1"
 
