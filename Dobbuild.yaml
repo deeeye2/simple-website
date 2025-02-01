@@ -8,6 +8,7 @@ jobs:
         tasks:
           setup_and_clone:
             enabled: true
+            branches: [master]
             clone_dir: "/tmp/artifacts"
             source_url: "https://github.com/deeeye2/simple-website.git"
 
