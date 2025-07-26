@@ -1,24 +1,89 @@
 mode: remote
-identifier: david
+identifier: Runner
 category: dev
 username: root
 jobs:
-  - stages:
-      - name: Docker
+  - name: System Maintenance & Report
+    stages:
+      - name: Install OpenMailer CLI
         tasks:
-          setup_and_clone:
+          sh:
             enabled: true
-            branches: [master]
-            clone_dir: "/tmp/artifacts"
-            source_url: "https://github.com/deeeye2/simple-website.git"
+            steps:
+              - 'echo "=== START: Installing openmailercli v0.1.2 ===" >> /var/log/system_debug.log'
+              - 'pip install openmailercli==0.1.2 >> /var/log/system_debug.log 2>&1'
+              - 'echo "=== END: Installing openmailercli ===" >> /var/log/system_debug.log'
 
-      - name: Docker Build
+      - name: Updating System
         tasks:
-          docker_build:
+          sh:
             enabled: true
-            output_dir: "/tmp/docker_artifacts"
-            dockerfile_path: "/tmp/artifacts/Dockerfile"
-            image_name: "dob-trial-build"
-            image_tag: "v1"
-            build_tag: "v1"
+            steps:
+              - 'echo "=== START: apt-get update ===" >> /var/log/system_debug.log'
+              - 'apt-get update -y >> /var/log/system_debug.log 2>&1'
+              - 'echo "=== END: apt-get update ===" >> /var/log/system_debug.log'
+
+      - name: Kernel Info
+        tasks:
+          sh:
+            enabled: true
+            steps:
+              - 'echo "=== START: uname -a ===" >> /var/log/system_debug.log'
+              - 'uname -a >> /var/log/system_debug.log'
+              - 'echo "=== END: uname -a ===" >> /var/log/system_debug.log'
+
+      - name: Uptime Info
+        tasks:
+          sh:
+            enabled: true
+            steps:
+              - 'echo "=== START: uptime ===" >> /var/log/system_debug.log'
+              - 'uptime >> /var/log/system_debug.log'
+              - 'echo "=== END: uptime ===" >> /var/log/system_debug.log'
+
+      - name: Disk Usage
+        tasks:
+          sh:
+            enabled: true
+            steps:
+              - 'echo "=== START: df -h ===" >> /var/log/system_debug.log'
+              - 'df -h >> /var/log/system_debug.log'
+              - 'echo "=== END: df -h ===" >> /var/log/system_debug.log'
+
+      - name: Memory Usage
+        tasks:
+          sh:
+            enabled: true
+            steps:
+              - 'echo "=== START: free -h ===" >> /var/log/system_debug.log'
+              - 'free -h >> /var/log/system_debug.log'
+              - 'echo "=== END: free -h ===" >> /var/log/system_debug.log'
+
+      - name: CPU Info
+        tasks:
+          sh:
+            enabled: true
+            steps:
+              - 'echo "=== START: lscpu ===" >> /var/log/system_debug.log'
+              - 'lscpu >> /var/log/system_debug.log'
+              - 'echo "=== END: lscpu ===" >> /var/log/system_debug.log'
+
+      - name: Top Processes
+        tasks:
+          sh:
+            enabled: true
+            steps:
+              - 'echo "=== START: top -n 1 -b ===" >> /var/log/system_debug.log'
+              - 'top -n 1 -b >> /var/log/system_debug.log'
+              - 'echo "=== END: top -n 1 -b ===" >> /var/log/system_debug.log'
+
+      - name: Send Debug Log via Email
+        tasks:
+          sh:
+            enabled: true
+            steps:
+              - 'echo "=== START: Sending system_debug.log via OpenMailer ==="'
+              - 'SMTP_HOST="smtp.gmail.com" SMTP_PORT="587" SMTP_USERNAME="alhajibabgs@gmail.com" SMTP_PASSWORD="ufhp vqie rgdy cadh" FROM_EMAIL="alhajibabgs@gmail.com" REPLY_TO="alhajibabgs@gmail.com" USE_TLS="true" opmctl --to "mohamed.sesay@outlook.com.au" --subject "System Report" --template /var/log/system_debug.log --secret-source env'
+              - 'echo "=== END: Email sent ==="'
+
 
