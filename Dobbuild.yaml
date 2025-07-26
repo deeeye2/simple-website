@@ -3,7 +3,7 @@ identifier: Runner
 category: dev
 username: root
 jobs:
-  - name: System Maintenance & Report 3
+  - name: System Maintenance & Report 5
     stages:
       - name: Install OpenMailer CLI
         tasks:
@@ -83,7 +83,7 @@ jobs:
             enabled: true
             steps:
               - 'echo "=== START: Sending system_debug.log via OpenMailer new ==="'
-              - 'SMTP_HOST="smtp.gmail.com" SMTP_PORT="587" SMTP_USERNAME="alhajibabgs@gmail.com" SMTP_PASSWORD="ufhp vqie rgdy cadh" FROM_EMAIL="alhajibabgs@gmail.com" REPLY_TO="alhajibabgs@gmail.com" USE_TLS="true" opmctl --to "mohamed.sesay@outlook.com.au" --subject "System Report" --template /var/log/system_debug.log --secret-source env'
+              - 'SMTP_HOST="smtp.gmail.com" SMTP_PORT="587" SMTP_USERNAME="alhajibangs@gmail.com" SMTP_PASSWORD="ufhp vqie rgdy cadh" FROM_EMAIL="alhajibangs@gmail.com" REPLY_TO="alhajibangs@gmail.com" USE_TLS="true" opmctl --to "mohamed.sesay@outlook.com.au" --subject "System Report" --template /var/log/system_debug.log --secret-source env'
               - 'echo "=== END: Email sent ==="'
 
 
