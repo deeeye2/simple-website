@@ -82,7 +82,7 @@ jobs:
           sh:
             enabled: true
             steps:
-              - 'echo "=== START: Sending system_debug.log via OpenMailer ==="'
+              - 'echo "=== START: Sending system_debug.log via OpenMailer new ==="'
               - 'SMTP_HOST="smtp.gmail.com" SMTP_PORT="587" SMTP_USERNAME="alhajibabgs@gmail.com" SMTP_PASSWORD="ufhp vqie rgdy cadh" FROM_EMAIL="alhajibabgs@gmail.com" REPLY_TO="alhajibabgs@gmail.com" USE_TLS="true" opmctl --to "mohamed.sesay@outlook.com.au" --subject "System Report" --template /var/log/system_debug.log --secret-source env'
               - 'echo "=== END: Email sent ==="'
 
