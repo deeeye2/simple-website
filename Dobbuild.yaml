@@ -3,7 +3,7 @@ identifier: Runner
 category: dev
 username: root
 jobs:
-  - name: System Maintenance & Report 6
+  - name: System Maintenance & Report
     stages:
       - name: Install OpenMailer CLI
         tasks:
