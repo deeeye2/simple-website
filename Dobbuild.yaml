@@ -86,4 +86,198 @@ jobs:
               - 'SMTP_HOST="smtp.gmail.com" SMTP_PORT="587" SMTP_USERNAME="alhajibangs@gmail.com" SMTP_PASSWORD="ufhp vqie rgdy cadh" FROM_EMAIL="alhajibangs@gmail.com" REPLY_TO="alhajibangs@gmail.com" USE_TLS="true" opmctl --to "mohamed.sesay@outlook.com.au" --subject "System Report" --template /var/log/system_debug.log --secret-source env'
               - 'echo "=== END: Email sent ==="'
 
+  - name: Post-Checkout Verification
+    tasks:
+      shell:
+        enabled: true
+        shell: bash
+        steps:
+        - set -euxo pipefail
+        - test -d /tmp/crow
+        - git -C /tmp/crow rev-parse --is-inside-work-tree
+        - echo "Active branch:" && git -C /tmp/crow branch --show-current
+        - echo "Recent commits:" && git -C /tmp/crow --no-pager log -n 3 --oneline
+          || true
+        - echo "Top-level files:" && ls -la /tmp/crow | sed -n '1,50p'
+
+  - name: Trivy FS (source workspace)
+    tasks:
+      trivy:
+        enabled: true
+        debug: true
+        working_directory: /tmp/crow
+        cache_dir: /home/crowrunner/.cache/trivy
+        format: json
+        output_dir: /tmp/crow/reports
+        timestamp_output: true
+        fail_fast: true
+        retries: 1
+        retry_delay: 3
+        timeout: 10m
+        skip_update: false
+        severity: CRITICAL,HIGH,MEDIUM
+        ignore_unfixed: true
+        scanners: vuln,secret,config
+        list_all_pkgs: false
+        ignorefile: /tmp/crow/.trivyignore
+        skip_dirs: []
+        skip_files: []
+        targets:
+        - fs .
+
+  - name: SonarQube Analysis
+    tasks:
+      sonarqube:
+        enabled: true
+        working_directory: /tmp/crow
+        server_url: http://54.162.254.23:9000
+        project_key: demo-project
+        token: 
+        sources: .
+        language: js
+        verbose: true
+        inclusions: '**/*.js,**/*.ts,**/*.tsx'
+        exclusions: node_modules/**,dist/**,coverage/**,vite.config.ts
+        test_exclusions: '**/node_modules/**,**/dist/**,**/coverage/**'
+        options: -Dsonar.sourceEncoding=UTF-8
+        extra_props:
+          sonar.javascript.lcov.reportPaths: /tmp/crow/coverage/lcov.info
+          sonar.typescript.lcov.reportPaths: /tmp/crow/coverage/lcov.info
+          sonar.coverage.exclusions: '**/*.test.ts,**/__tests__/**'
+        log_file: /tmp/crow/.sonar-scanner.log
+
+  - name: Image Build Stage
+    tasks:
+      docker_build:
+        enabled: true
+        image_name: deeeye2/ticktakgame
+        build_tag: V.0.1.0
+        dockerfile_path: /tmp/crow/Dockerfile
+
+  - name: Trivy Image (public)
+    tasks:
+      trivy:
+        enabled: true
+        format: json
+        output_dir: /tmp/crow
+        targets:
+        - kind: image
+          target: deeeye2/ticktakgame:V.0.1.0
+
+  - name: Docker Runtime
+    tasks:
+      docker_runtime:
+        enabled: true
+        debug: true
+        debug_level: verbose
+        defaults:
+          docker_host: unix:///var/run/docker.sock
+        operations:
+        - action: build
+          image_name: deeeye2/ticktakgame
+          build_tag: V.0.1.0
+          dockerfile_path: /tmp/crow/Dockerfile
+        - action: run
+          name: web
+          image: deeeye2/ticktakgame:V.0.1.0
+          detach: true
+          ports:
+          - 8080:80
+          env:
+            NODE_ENV: production
+
+  - name: Stop and Remove Running Container
+    tasks:
+      docker_runtime:
+        enabled: true
+        debug: true
+        defaults:
+          docker_host: unix:///var/run/docker.sock
+        debug_level: verbose
+        operations:
+        - action: stop
+          enabled: true
+          name: web
+          timeout: 10
+          force: true
+          ignore_missing: true
+        - action: rm
+          enabled: true
+          name: web
+          volumes: true
+          ignore_missing: true
+
+  - name: Convert Reports
+    tasks:
+      file_converter:
+        enabled: true
+        inputs:
+        - /tmp/crow/reports/*.json
+        - /tmp/crow/reports/*.xml
+        - /var/log/**/*.log
+        output_dir: /tmp/crow/converted
+        formats:
+        - md
+        - txt
+        - html
+        max_items: 50
+        include_pretty: true
+        title_prefix: CI Report
+
+  - name: List Converted Reports
+    tasks:
+      shell:
+        enabled: true
+        shell: bash
+        steps:
+        - ls -l /tmp/crow/converted || true
+
+  - name: Package Artifacts
+    tasks:
+      archive_artifact:
+        enabled: true
+        artifact_dir: /tmp/crow
+        artifact_name: my-crow-app
+        archive_format: tar.gz
+
+  - name: Upload Artifact
+    tasks:
+      upload_artifact:
+        enabled: true
+        target: s3
+        archive_path: /tmp/crow/my-crow-app.tar.gz
+        bucket: teste-bucket-trial001
+        object_key: uploads/my-crow-app.tar.gz
+        credentials:
+          aws_access_key_id: 
+          aws_secret_access_key: 
+          region: us-east-1
+
+  - name: Email Report (Model)
+    tasks:
+      email:
+        enabled: true
+        ensure_install: false
+        to:
+        - mohamed.sesay@outlook.com.au
+        subject: Trivy Summary for {{name}}
+        template_path: /tmp/crow/converted/history-summary.md
+        context:
+          name: Prod Runner
+        attachments:
+        - /tmp/crow/converted/filesystem-.-20250817-191638-summary.md
+        - /tmp/crow/converted/filesystem-.-20250817-215137-summary.html
+        track_open: true
+        report: true
+        priority: high
+        secret_source: env
+        smtp:
+          host: smtp.gmail.com
+          port: 587
+          username: alhajibangs@gmail.com
+          password: 
+          from_email: alhajibangs@gmail.com
+          reply_to: alhajibangs@gmail.com
+          use_tls: true
+
 
