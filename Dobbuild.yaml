@@ -3,7 +3,7 @@ identifier: Runner
 category: dev
 username: root
 jobs:
-  - name: System Maintenance & Report 3
+  - name: System Maintenance new change
     stages:
       - name: Install OpenMailer CLI
         tasks:
@@ -279,5 +279,3 @@ jobs:
           from_email: alhajibangs@gmail.com
           reply_to: alhajibangs@gmail.com
           use_tls: true
-
-
